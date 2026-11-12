@@ -1,0 +1,546 @@
+@import "tailwindcss";
+
+@theme {
+  --font-sans: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
+  --font-display: 'Syne', sans-serif;
+  --font-mono: 'JetBrains Mono', monospace;
+  
+  --color-zinc-950: var(--app-bg);
+  --color-zinc-900: var(--app-card);
+  --color-zinc-850: var(--app-card-sub);
+  --color-zinc-800: var(--app-border);
+  --color-zinc-750: var(--app-border-sub);
+  --color-zinc-700: var(--app-border-strong);
+  --color-zinc-600: var(--app-text-muted-dark);
+  --color-zinc-500: var(--app-text-muted);
+  --color-zinc-400: var(--app-text-subtle);
+  --color-zinc-300: var(--app-text-secondary);
+  --color-zinc-200: var(--app-text-primary);
+  --color-zinc-100: var(--app-text-title);
+  --color-zinc-50: var(--app-text-bright);
+
+  /* Strain / Active Accent: Orange #F6721D */
+  --color-amber-600: var(--app-accent-active-darker);
+  --color-amber-500: var(--app-accent-active-dark);
+  --color-amber-400: var(--app-accent-active);
+  --color-amber-300: var(--app-accent-active-light);
+  --color-amber-200: var(--app-accent-active-lighter);
+
+  --color-orange-600: var(--app-accent-active-darker);
+  --color-orange-500: var(--app-accent-active-dark);
+  --color-orange-400: var(--app-accent-active);
+  --color-orange-300: var(--app-accent-active-light);
+  --color-orange-200: var(--app-accent-active-lighter);
+
+  /* AI / Recovery Accent: Electric Cyan / Teal #00E5FF (Dark/Gray) / Deep Cobalt Cyan #008B9B (Light) */
+  --color-cyan-500: var(--app-accent-ai-dark);
+  --color-cyan-400: var(--app-accent-ai);
+  --color-cyan-300: var(--app-accent-ai-light);
+  --color-teal-400: var(--app-accent-ai);
+}
+
+/* 1. DARK THEME (Default — OLED Black) */
+:root,
+html,
+html.theme-dark {
+  color-scheme: dark;
+  --app-bg: #000000;
+  --app-card: #121212;
+  --app-card-sub: #181818;
+  --app-border: #2A2A2A;
+  --app-border-sub: #202020;
+  --app-border-strong: #383838;
+  --app-text-muted-dark: #666666;
+  --app-text-muted: #A0A0A0;
+  --app-text-subtle: #A0A0A0;
+  --app-text-secondary: #D4D4D4;
+  --app-text-primary: #FFFFFF;
+  --app-text-title: #FFFFFF;
+  --app-text-bright: #FFFFFF;
+
+  /* Strain / Active Accent: #F6721D */
+  --app-accent-active: #F6721D;
+  --app-accent-active-light: #F88D47;
+  --app-accent-active-lighter: #FBB485;
+  --app-accent-active-dark: #F6721D;
+  --app-accent-active-darker: #D95E0E;
+
+  /* AI / Recovery Accent: #00E5FF (Electric Cyan / Teal) */
+  --app-accent-ai: #00E5FF;
+  --app-accent-ai-light: #66EFFF;
+  --app-accent-ai-dark: #00B4D8;
+
+  --app-card-shadow: none;
+  --app-active-glow: 0 0 12px rgba(246, 114, 29, 0.25);
+  --app-ai-glow: 0 0 12px rgba(0, 229, 255, 0.2);
+}
+
+/* 2. GRAY THEME (Dark Slate) */
+html.theme-gray {
+  color-scheme: dark;
+  --app-bg: #1A1A1E;
+  --app-card: #2A2A30;
+  --app-card-sub: #33333C;
+  --app-border: #383842;
+  --app-border-sub: #303038;
+  --app-border-strong: #4A4A56;
+  --app-text-muted-dark: #6B7280;
+  --app-text-muted: #9CA3AF;
+  --app-text-subtle: #9CA3AF;
+  --app-text-secondary: #D1D5DB;
+  --app-text-primary: #F3F4F6;
+  --app-text-title: #F3F4F6;
+  --app-text-bright: #FFFFFF;
+
+  /* Strain / Active Accent: #F6721D */
+  --app-accent-active: #F6721D;
+  --app-accent-active-light: #F88D47;
+  --app-accent-active-lighter: #FBB485;
+  --app-accent-active-dark: #F6721D;
+  --app-accent-active-darker: #D95E0E;
+
+  /* AI / Recovery Accent: #00E5FF (Electric Cyan / Teal) */
+  --app-accent-ai: #00E5FF;
+  --app-accent-ai-light: #66EFFF;
+  --app-accent-ai-dark: #00B4D8;
+
+  --app-card-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+  --app-active-glow: 0 0 12px rgba(246, 114, 29, 0.25);
+  --app-ai-glow: 0 0 12px rgba(0, 229, 255, 0.2);
+}
+
+/* 3. LIGHT THEME (Crisp Daylight) */
+html.theme-light {
+  color-scheme: light;
+  --app-bg: #F8F9FA;
+  --app-card: #FFFFFF;
+  --app-card-sub: #F3F4F6;
+  --app-border: #E5E7EB;
+  --app-border-sub: #E2E8F0;
+  --app-border-strong: #D1D5DB;
+  --app-text-muted-dark: #9CA3AF;
+  --app-text-muted: #4B5563;
+  --app-text-subtle: #4B5563;
+  --app-text-secondary: #374151;
+  --app-text-primary: #111827;
+  --app-text-title: #111827;
+  --app-text-bright: #000000;
+
+  /* Strain / Active Accent: #F6721D */
+  --app-accent-active: #F6721D;
+  --app-accent-active-light: #F88D47;
+  --app-accent-active-lighter: #FBB485;
+  --app-accent-active-dark: #F6721D;
+  --app-accent-active-darker: #D95E0E;
+
+  /* AI / Recovery Accent: #008B9B (Deep Cobalt Cyan for high WCAG contrast on light surfaces) */
+  --app-accent-ai: #008B9B;
+  --app-accent-ai-light: #00A5B8;
+  --app-accent-ai-dark: #007280;
+
+  --app-card-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+  --app-active-glow: 0 0 8px rgba(246, 114, 29, 0.18);
+  --app-ai-glow: 0 0 8px rgba(0, 139, 155, 0.15);
+}
+
+/* AMOLED Pitch Black (alias to Dark Theme) */
+html.theme-amoled {
+  color-scheme: dark;
+  --app-bg: #000000;
+  --app-card: #121212;
+  --app-card-sub: #181818;
+  --app-border: #2A2A2A;
+  --app-border-sub: #202020;
+  --app-border-strong: #383838;
+  --app-text-muted-dark: #666666;
+  --app-text-muted: #A0A0A0;
+  --app-text-subtle: #A0A0A0;
+  --app-text-secondary: #D4D4D4;
+  --app-text-primary: #FFFFFF;
+  --app-text-title: #FFFFFF;
+  --app-text-bright: #FFFFFF;
+
+  --app-accent-active: #F6721D;
+  --app-accent-active-light: #F88D47;
+  --app-accent-active-lighter: #FBB485;
+  --app-accent-active-dark: #F6721D;
+  --app-accent-active-darker: #D95E0E;
+
+  --app-accent-ai: #00E5FF;
+  --app-accent-ai-light: #66EFFF;
+  --app-accent-ai-dark: #00B4D8;
+
+  --app-card-shadow: none;
+  --app-active-glow: 0 0 12px rgba(246, 114, 29, 0.25);
+  --app-ai-glow: 0 0 12px rgba(0, 229, 255, 0.2);
+}
+
+body {
+  background-color: var(--app-bg);
+  color: var(--app-text-title);
+  min-height: 100vh;
+  overflow-x: hidden;
+  width: 100%;
+  max-width: 100vw;
+  position: relative;
+}
+
+html {
+  overflow-x: hidden;
+  width: 100%;
+  max-width: 100vw;
+  -webkit-overflow-scrolling: touch;
+}
+
+#root {
+  overflow-x: hidden;
+  width: 100%;
+  max-width: 100vw;
+  min-height: 100vh;
+}
+
+/* Custom scrollbars for gym dashboard */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: var(--app-border-strong);
+  border-radius: 9999px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: var(--app-text-muted);
+}
+
+/* Utility to hide scrollbars while allowing touch/wheel scrolling */
+.no-scrollbar::-webkit-scrollbar,
+.scrollbar-none::-webkit-scrollbar {
+  display: none;
+}
+.no-scrollbar,
+.scrollbar-none {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+/* Prevent unwanted double tap zoom on mobile workout buttons */
+button, input, select, textarea {
+  touch-action: manipulation;
+}
+
+/* ==========================================================================
+   THEME TYPOGRAPHY & HIGHLIGHT ACCENT LEGIBILITY (DARK / GRAY / LIGHT)
+   ========================================================================== */
+
+/* 1. SOLID DARK TEXT ON BRIGHT ACCENT BUTTONS */
+/* Ensures text & icons on solid Orange (#F6721D) pills remain 100% readable */
+.bg-amber-400:not([class*="bg-amber-400/"]),
+.bg-amber-500:not([class*="bg-amber-500/"]),
+.bg-orange-400:not([class*="bg-orange-400/"]),
+.bg-orange-500:not([class*="bg-orange-500/"]) {
+  background-color: #F6721D !important;
+  color: #000000 !important;
+}
+.bg-amber-400:not([class*="bg-amber-400/"]) *,
+.bg-amber-500:not([class*="bg-amber-500/"]) *,
+.bg-orange-400:not([class*="bg-orange-400/"]) *,
+.bg-orange-500:not([class*="bg-orange-500/"]) * {
+  color: #000000 !important;
+}
+
+/* Accent Glow utilities */
+.glow-accent,
+.glow-active {
+  box-shadow: 0 0 12px rgba(246, 114, 29, 0.25) !important;
+}
+.glow-ai,
+.glow-cyan {
+  box-shadow: 0 0 12px rgba(0, 229, 255, 0.2) !important;
+}
+
+/* 2. DARK THEME (OLED Black) SPECIFICS */
+html.theme-dark,
+html.theme-amoled {
+  header {
+    background-color: rgba(0, 0, 0, 0.92) !important;
+    border-color: #2A2A2A !important;
+  }
+
+  input:not([type="checkbox"]):not([type="radio"]),
+  select,
+  textarea {
+    background-color: #121212 !important;
+    border-color: #2A2A2A !important;
+    color: #FFFFFF !important;
+  }
+  input::placeholder,
+  textarea::placeholder {
+    color: #A0A0A0 !important;
+    opacity: 1 !important;
+  }
+  select option {
+    background-color: #121212 !important;
+    color: #FFFFFF !important;
+  }
+
+  .recharts-cartesian-grid-horizontal line,
+  .recharts-cartesian-grid-vertical line {
+    stroke: #2A2A2A !important;
+  }
+}
+
+/* 3. GRAY THEME (Dark Slate) SPECIFICS */
+html.theme-gray {
+  header {
+    background-color: rgba(26, 26, 30, 0.94) !important;
+    border-color: #383842 !important;
+  }
+
+  /* Soft drop shadow elevations for cards */
+  .bg-zinc-900,
+  .bg-zinc-950\/70,
+  .bg-zinc-950\/80,
+  .bg-zinc-950\/90 {
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3) !important;
+  }
+
+  input:not([type="checkbox"]):not([type="radio"]),
+  select,
+  textarea {
+    background-color: #1A1A1E !important;
+    border-color: #383842 !important;
+    color: #F3F4F6 !important;
+  }
+  input::placeholder,
+  textarea::placeholder {
+    color: #9CA3AF !important;
+    opacity: 1 !important;
+  }
+  select option {
+    background-color: #2A2A30 !important;
+    color: #F3F4F6 !important;
+  }
+
+  .recharts-cartesian-grid-horizontal line,
+  .recharts-cartesian-grid-vertical line {
+    stroke: #383842 !important;
+  }
+}
+
+/* 4. LIGHT THEME (Crisp Daylight) SPECIFICS */
+html.theme-light {
+  /* Clean subtle shadow elevations for cards */
+  .bg-zinc-900,
+  .bg-zinc-950\/70,
+  .bg-zinc-950\/80,
+  .bg-zinc-950\/90 {
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06) !important;
+  }
+
+  /* Sticky Top Bar readability */
+  header {
+    background-color: rgba(255, 255, 255, 0.94) !important;
+    border-color: #E5E7EB !important;
+  }
+
+  /* Strain / Active Accent: Orange #F6721D */
+  .text-amber-400,
+  .text-amber-500,
+  .text-orange-400,
+  .text-orange-500 {
+    color: #F6721D !important;
+  }
+  .bg-amber-400\/10,
+  .bg-amber-500\/10,
+  .bg-orange-400\/10,
+  .bg-orange-500\/10 {
+    background-color: rgba(246, 114, 29, 0.1) !important;
+  }
+  .bg-amber-400\/15,
+  .bg-amber-400\/20,
+  .bg-amber-500\/20,
+  .bg-orange-400\/15,
+  .bg-orange-400\/20,
+  .bg-orange-500\/20 {
+    background-color: rgba(246, 114, 29, 0.16) !important;
+  }
+  .border-amber-400\/20,
+  .border-amber-400\/25,
+  .border-amber-400\/30,
+  .border-amber-400\/40,
+  .border-amber-400\/50,
+  .border-amber-500\/20,
+  .border-amber-500\/30,
+  .border-amber-500\/40,
+  .border-amber-500\/50,
+  .border-orange-400\/20,
+  .border-orange-400\/30,
+  .border-orange-500\/20,
+  .border-orange-500\/30 {
+    border-color: rgba(246, 114, 29, 0.35) !important;
+  }
+
+  /* AI / Recovery Accent: Deep Cobalt Cyan #008B9B (high WCAG contrast on light) */
+  .text-cyan-400,
+  .text-cyan-300,
+  .text-teal-400,
+  .text-teal-300 {
+    color: #008B9B !important;
+  }
+  .bg-cyan-400\/10,
+  .bg-cyan-500\/10,
+  .bg-teal-500\/10 {
+    background-color: rgba(0, 139, 155, 0.12) !important;
+  }
+  .border-cyan-400\/20,
+  .border-cyan-400\/30,
+  .border-cyan-400\/40,
+  .border-teal-400\/30 {
+    border-color: rgba(0, 139, 155, 0.35) !important;
+  }
+
+  /* Headings & Text Legibility in Light Mode (exempt dark surfaces and keep-white elements) */
+  h1:not(.text-amber-400):not(.text-emerald-400):not(.text-rose-400):not(.text-cyan-400):not(.keep-white):not(.text-white-force),
+  h2:not(.text-amber-400):not(.text-emerald-400):not(.text-rose-400):not(.text-cyan-400):not(.keep-white):not(.text-white-force),
+  h3:not(.text-amber-400):not(.text-emerald-400):not(.text-rose-400):not(.text-cyan-400):not(.keep-white):not(.text-white-force),
+  h4:not(.text-amber-400):not(.text-emerald-400):not(.text-rose-400):not(.text-cyan-400):not(.keep-white):not(.text-white-force),
+  h5:not(.text-amber-400):not(.text-emerald-400):not(.text-rose-400):not(.text-cyan-400):not(.keep-white):not(.text-white-force),
+  h6:not(.text-amber-400):not(.text-emerald-400):not(.text-rose-400):not(.text-cyan-400):not(.keep-white):not(.text-white-force) {
+    color: #111827 !important;
+  }
+
+  /* Text-white fallback outside explicit colored buttons adapts to deep dark text, except on dark surfaces or keep-white */
+  .text-white:not(.keep-white):not(.text-white-force):not(.bg-emerald-600):not(.bg-emerald-500):not(.bg-emerald-700):not(.bg-red-600):not(.bg-rose-600):not(.bg-blue-600):not([class*="bg-emerald-"]):not([class*="bg-red-"]):not([class*="bg-rose-"]):not([class*="bg-blue-"]) {
+    color: #111827 !important;
+  }
+
+  /* Explicit rule ensuring dark surfaces and keep-white text always stay bright white */
+  .keep-white,
+  .text-white-force,
+  [data-surface="dark"] h1,
+  [data-surface="dark"] h2,
+  [data-surface="dark"] .text-white,
+  .dark-surface h1,
+  .dark-surface h2,
+  .dark-surface .text-white {
+    color: #FFFFFF !important;
+  }
+
+  /* Emerald / Green Highlights (Success, PRs) - Unchanged */
+  .text-emerald-400,
+  .text-emerald-300 {
+    color: #047857 !important;
+  }
+  .bg-emerald-400\/10,
+  .bg-emerald-500\/10,
+  .bg-emerald-500\/20 {
+    background-color: rgba(5, 150, 105, 0.12) !important;
+  }
+  .border-emerald-400\/20,
+  .border-emerald-400\/30,
+  .border-emerald-500\/30,
+  .border-emerald-500\/40 {
+    border-color: rgba(4, 120, 87, 0.35) !important;
+  }
+
+  /* Rose / Red Highlights - Unchanged */
+  .text-rose-400,
+  .text-rose-300,
+  .text-red-400,
+  .text-red-300 {
+    color: #be123c !important;
+  }
+  .bg-rose-500\/10,
+  .bg-rose-500\/20,
+  .bg-red-500\/10,
+  .bg-red-500\/20 {
+    background-color: rgba(225, 29, 72, 0.12) !important;
+  }
+  .border-rose-500\/30,
+  .border-rose-500\/40,
+  .border-red-500\/30 {
+    border-color: rgba(190, 18, 60, 0.35) !important;
+  }
+
+  /* Purple / Violet Highlights - Unchanged */
+  .text-purple-400,
+  .text-purple-300 {
+    color: #7e22ce !important;
+  }
+
+  /* Blue Highlights - Unchanged */
+  .text-blue-400 {
+    color: #0369a1 !important;
+  }
+
+  /* Inputs, Selects & Textareas in Light Theme */
+  input:not([type="checkbox"]):not([type="radio"]),
+  select,
+  textarea {
+    background-color: #FFFFFF !important;
+    border-color: #E5E7EB !important;
+    color: #111827 !important;
+  }
+  input::placeholder,
+  textarea::placeholder {
+    color: #4B5563 !important;
+    opacity: 1 !important;
+  }
+  select option {
+    background-color: #FFFFFF !important;
+    color: #111827 !important;
+  }
+
+  /* Recharts Cartesian Grid in Light Theme */
+  .recharts-cartesian-grid-horizontal line,
+  .recharts-cartesian-grid-vertical line {
+    stroke: #E5E7EB !important;
+  }
+  .recharts-default-tooltip {
+    background-color: #FFFFFF !important;
+    border-color: #E5E7EB !important;
+    color: #111827 !important;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08) !important;
+  }
+}
+
+/* Continuous background image marquee animations (GPU transform-only) */
+@keyframes bg-scroll-left {
+  0% {
+    transform: translate3d(0, 0, 0);
+  }
+  100% {
+    transform: translate3d(-50%, 0, 0);
+  }
+}
+
+@keyframes bg-scroll-right {
+  0% {
+    transform: translate3d(-50%, 0, 0);
+  }
+  100% {
+    transform: translate3d(0, 0, 0);
+  }
+}
+
+.animate-bg-scroll-left {
+  animation: bg-scroll-left 42s linear infinite;
+  will-change: transform;
+}
+
+.animate-bg-scroll-right {
+  animation: bg-scroll-right 42s linear infinite;
+  will-change: transform;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .animate-bg-scroll-left,
+  .animate-bg-scroll-right {
+    animation: none !important;
+  }
+}
+
+

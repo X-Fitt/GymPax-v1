@@ -1,0 +1,8 @@
+{
+  "name": "GymPax-App V2 - Downsize",
+  "description": "Minimalist gym workout tracker and bodybuilding companion with personalized training plans, intuitive set logging, progressive overload tracking, and social motivation.",
+  "requestFramePermissions": [],
+  "majorCapabilities": [
+    "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"
+  ]
+}

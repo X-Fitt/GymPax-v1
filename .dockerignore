@@ -1,0 +1,4 @@
+.aistudio/
+.git/
+.DS_Store
+*.log
