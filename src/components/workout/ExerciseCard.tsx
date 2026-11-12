@@ -300,17 +300,17 @@ export const ExerciseCard: React.FC<ExerciseCardProps> = ({
               </div>
             )}
 
-            <div className="min-w-0">
-              <div className="flex items-center gap-2">
+            <div className="min-w-0 pt-1">
+              <div className="flex items-center gap-2 flex-wrap">
                 <span className="font-mono text-xs font-bold text-zinc-500">
                   #{exerciseIndex + 1}
                 </span>
-                <h3 className="font-bold text-sm text-zinc-100 truncate">
+                <h3 className="font-bold text-sm text-zinc-100 break-words leading-snug mt-0.5">
                   {exercise.name}
                 </h3>
               </div>
-              <div className="flex items-center gap-2 text-xs text-zinc-400 mt-0.5">
-                <span className={`${isAllSetsDone ? 'text-emerald-400' : 'text-zinc-400'} font-medium font-mono text-[11px]`}>
+              <div className="flex items-center gap-2 text-xs text-zinc-300 mt-1">
+                <span className={`${isAllSetsDone ? 'text-emerald-400' : 'text-zinc-300'} font-medium font-mono text-[11px]`}>
                   {completedSetsCount} / {exercise.sets.length} sets completed
                 </span>
                 {totalVolume > 0 && (
@@ -400,7 +400,7 @@ export const ExerciseCard: React.FC<ExerciseCardProps> = ({
             </button>
           </div>
         )}
-        <div className="min-w-0 flex-1 pr-1">
+        <div className="min-w-0 flex-1 pr-1 pt-1 sm:pt-0.5">
           <div className="flex items-center gap-1.5 flex-wrap">
             {/* Minimalistic short up/down arrows to move exercise in queue */}
             {(onMoveUp || onMoveDown) && (
@@ -427,12 +427,9 @@ export const ExerciseCard: React.FC<ExerciseCardProps> = ({
                 </button>
               </div>
             )}
-            <span className="font-mono text-xs font-bold text-zinc-500 shrink-0">
+            <span className="font-mono text-xs font-bold text-zinc-400 shrink-0">
               #{exerciseIndex + 1}
             </span>
-            <h3 className="font-bold text-sm sm:text-base text-zinc-100 break-words line-clamp-2 sm:line-clamp-none leading-snug flex-1 min-w-0">
-              {exercise.name}
-            </h3>
             <ExerciseInfoTooltip
               exerciseId={exercise.exerciseId}
               exerciseName={exercise.name}
@@ -450,10 +447,13 @@ export const ExerciseCard: React.FC<ExerciseCardProps> = ({
                 <span>Rest Active</span>
               </span>
             )}
+            <h3 className="basis-full w-full font-bold text-sm sm:text-base text-zinc-100 break-words leading-snug mt-1.5 sm:mt-1">
+              {exercise.name}
+            </h3>
           </div>
           {/* Zero-pill metadata text */}
-          <div className="flex items-center gap-2 text-xs text-zinc-400 mt-0.5 flex-wrap">
-            <span className="text-amber-300/90 font-medium">
+          <div className="flex items-center gap-2 text-xs text-zinc-300 mt-1 flex-wrap">
+            <span className="text-amber-300 font-semibold">
               {resolvedRawMuscle && resolvedRawMuscle !== exercise.targetMuscle
                 ? `${resolvedRawMuscle} (${exercise.targetMuscle})`
                 : exercise.targetMuscle}
