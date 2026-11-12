@@ -33,9 +33,13 @@ import {
   ShieldCheck,
   Info,
   Check,
-  Flag
+  Flag,
+  Edit3,
+  Eye,
+  EyeOff
 } from 'lucide-react';
-import { NearbyAthlete, ExperienceLevel, UserProfile, RewardsProfile } from '../../types';
+import { NearbyAthlete, ExperienceLevel, UserProfile, RewardsProfile, WorkoutPlan, DailyWorkoutRoutine } from '../../types';
+import { saveSharedPlanToMyCustomPlans } from '../../utils/storage';
 import { AthleteDetailModal } from './AthleteDetailModal';
 import { InviteShareModal } from './InviteShareModal';
 import { WhatsAppConnectModal } from './WhatsAppConnectModal';
@@ -205,10 +209,231 @@ export const NearbyAthletesView: React.FC<NearbyAthletesViewProps> = ({
   const [tempAreaInput, setTempAreaInput] = useState<string>(userArea);
   const [feedbackToast, setFeedbackToast] = useState<string | null>(null);
   const [showNearbyVisibilityInfoModal, setShowNearbyVisibilityInfoModal] = useState<boolean>(false);
+  const [copyingAthleteId, setCopyingAthleteId] = useState<string | null>(null);
+  const [previewWorkoutAthleteId, setPreviewWorkoutAthleteId] = useState<string | null>(null);
+  const [customWorkoutTitleInput, setCustomWorkoutTitleInput] = useState<string>('');
+  const [copiedWorkoutByAthleteId, setCopiedWorkoutByAthleteId] = useState<Record<string, string>>({});
+  const renameInputRef = React.useRef<HTMLInputElement | null>(null);
+
+  React.useEffect(() => {
+    if (copyingAthleteId && renameInputRef.current) {
+      const el = renameInputRef.current;
+      el.focus();
+      el.setSelectionRange(0, 0);
+      el.scrollLeft = 0;
+      requestAnimationFrame(() => {
+        if (renameInputRef.current === el) {
+          el.setSelectionRange(0, 0);
+          el.scrollLeft = 0;
+        }
+      });
+    }
+  }, [copyingAthleteId]);
 
   const showToast = (msg: string) => {
     setFeedbackToast(msg);
     setTimeout(() => setFeedbackToast(null), 3500);
+  };
+
+  const getDefaultAthleteWorkoutName = (athlete: NearbyAthlete) => {
+    const firstName = athlete.name.split(' ')[0] || athlete.name;
+    const splitName = athlete.workoutSplit || 'Strength & Hypertrophy Split';
+    return `${firstName}'s ${splitName}`;
+  };
+
+  const buildAthleteWorkoutPlan = (athlete: NearbyAthlete, customTitle: string): WorkoutPlan => {
+    const splitLower = (athlete.workoutSplit || '').toLowerCase();
+    let routines: DailyWorkoutRoutine[];
+
+    if (splitLower.includes('push') || splitLower.includes('ppl')) {
+      routines = [
+        {
+          dayName: 'Day 1: Push (Chest, Shoulders & Triceps)',
+          focus: 'Chest, Shoulders, Triceps',
+          exercises: [
+            { exerciseId: 'barbell_bench_press', name: 'Barbell Bench Press', defaultSets: 4, targetReps: '6-8', targetRpe: 8.5 },
+            { exerciseId: 'dumbbell_incline_bench_press', name: 'Incline Dumbbell Bench Press', defaultSets: 3, targetReps: '8-10', targetRpe: 8.5 },
+            { exerciseId: 'dumbbell_lateral_raise', name: 'Dumbbell Lateral Raise', defaultSets: 4, targetReps: '12-15', targetRpe: 9 },
+            { exerciseId: 'cable_pushdown_with_rope_attachment', name: 'Cable Rope Triceps Pushdown', defaultSets: 3, targetReps: '10-12', targetRpe: 9 }
+          ]
+        },
+        {
+          dayName: 'Day 2: Pull (Back, Lats & Biceps)',
+          focus: 'Back, Shoulders, Biceps',
+          exercises: [
+            { exerciseId: 'cable_wide_grip_lat_pulldown', name: 'Wide-Grip Lat Pulldown', defaultSets: 4, targetReps: '8-10', targetRpe: 8.5 },
+            { exerciseId: 'barbell_bent_over_row', name: 'Barbell Bent-Over Row', defaultSets: 4, targetReps: '8-10', targetRpe: 8.5 },
+            { exerciseId: 'cable_rope_rear_delt_row', name: 'Cable Rope Rear Delt Row', defaultSets: 3, targetReps: '15', targetRpe: 9 },
+            { exerciseId: 'barbell_curl', name: 'Barbell Biceps Curl', defaultSets: 3, targetReps: '10-12', targetRpe: 9 }
+          ]
+        },
+        {
+          dayName: 'Day 3: Legs (Quads, Hamstrings & Glutes)',
+          focus: 'Quads, Hamstrings, Glutes, Calves',
+          exercises: [
+            { exerciseId: 'barbell_full_squat', name: 'Barbell Full Squat', defaultSets: 4, targetReps: '6-8', targetRpe: 8.5 },
+            { exerciseId: 'barbell_romanian_deadlift', name: 'Barbell Romanian Deadlift', defaultSets: 4, targetReps: '8-10', targetRpe: 8.5 },
+            { exerciseId: 'lever_leg_extension', name: 'Seated Leg Extension', defaultSets: 3, targetReps: '12-15', targetRpe: 9 },
+            { exerciseId: 'lever_seated_leg_curl', name: 'Seated Leg Curl', defaultSets: 3, targetReps: '10-12', targetRpe: 9 },
+            { exerciseId: 'barbell_standing_calf_raise', name: 'Standing Calf Raise', defaultSets: 4, targetReps: '12-15', targetRpe: 9 }
+          ]
+        }
+      ];
+    } else if (splitLower.includes('upper') || splitLower.includes('lower') || splitLower.includes('torso')) {
+      routines = [
+        {
+          dayName: 'Day 1: Upper Body A (Heavy Compounds)',
+          focus: 'Chest, Back, Shoulders, Arms',
+          exercises: [
+            { exerciseId: 'barbell_bench_press', name: 'Barbell Bench Press', defaultSets: 4, targetReps: '6-8', targetRpe: 8.5 },
+            { exerciseId: 'barbell_bent_over_row', name: 'Barbell Bent-Over Row', defaultSets: 4, targetReps: '6-8', targetRpe: 8.5 },
+            { exerciseId: 'barbell_standing_military_press', name: 'Standing Overhead Military Press', defaultSets: 3, targetReps: '8-10', targetRpe: 8.5 },
+            { exerciseId: 'cable_wide_grip_lat_pulldown', name: 'Wide-Grip Lat Pulldown', defaultSets: 3, targetReps: '10-12', targetRpe: 8.5 },
+            { exerciseId: 'barbell_curl', name: 'Barbell Biceps Curl', defaultSets: 3, targetReps: '10-12', targetRpe: 9 }
+          ]
+        },
+        {
+          dayName: 'Day 2: Lower Body A (Quad & Glute Focus)',
+          focus: 'Quads, Hamstrings, Glutes, Calves',
+          exercises: [
+            { exerciseId: 'barbell_full_squat', name: 'Barbell Full Squat', defaultSets: 4, targetReps: '6-8', targetRpe: 8.5 },
+            { exerciseId: 'barbell_romanian_deadlift', name: 'Barbell Romanian Deadlift', defaultSets: 4, targetReps: '8-10', targetRpe: 8.5 },
+            { exerciseId: 'lever_leg_extension', name: 'Seated Leg Extension', defaultSets: 3, targetReps: '12-15', targetRpe: 9 },
+            { exerciseId: 'barbell_standing_calf_raise', name: 'Standing Calf Raise', defaultSets: 4, targetReps: '12-15', targetRpe: 9 }
+          ]
+        },
+        {
+          dayName: 'Day 3: Upper Body B (Hypertrophy & Arms)',
+          focus: 'Chest, Back, Delts, Triceps, Biceps',
+          exercises: [
+            { exerciseId: 'dumbbell_incline_bench_press', name: 'Incline Dumbbell Bench Press', defaultSets: 4, targetReps: '8-10', targetRpe: 8.5 },
+            { exerciseId: 'cable_seated_row', name: 'Seated Cable Row', defaultSets: 4, targetReps: '10-12', targetRpe: 8.5 },
+            { exerciseId: 'dumbbell_lateral_raise', name: 'Dumbbell Lateral Raise', defaultSets: 4, targetReps: '12-15', targetRpe: 9 },
+            { exerciseId: 'cable_pushdown_with_rope_attachment', name: 'Cable Rope Triceps Pushdown', defaultSets: 3, targetReps: '12-15', targetRpe: 9 },
+            { exerciseId: 'dumbbell_incline_curl', name: 'Incline Dumbbell Curl', defaultSets: 3, targetReps: '10-12', targetRpe: 9 }
+          ]
+        },
+        {
+          dayName: 'Day 4: Lower Body B (Posterior Chain & Hamstrings)',
+          focus: 'Hamstrings, Glutes, Quads, Core',
+          exercises: [
+            { exerciseId: 'barbell_deadlift', name: 'Conventional Barbell Deadlift', defaultSets: 3, targetReps: '5', targetRpe: 9 },
+            { exerciseId: 'sled_hack_squat', name: 'Machine Hack Squat', defaultSets: 3, targetReps: '8-10', targetRpe: 8.5 },
+            { exerciseId: 'lever_seated_leg_curl', name: 'Seated Leg Curl', defaultSets: 3, targetReps: '10-12', targetRpe: 9 },
+            { exerciseId: 'hanging_leg_raise', name: 'Hanging Leg Raise', defaultSets: 3, targetReps: '12-15', targetRpe: 9 }
+          ]
+        }
+      ];
+    } else if (splitLower.includes('arnold')) {
+      routines = [
+        {
+          dayName: 'Day 1: Chest & Back Antagonist',
+          focus: 'Chest, Back, Lats',
+          exercises: [
+            { exerciseId: 'barbell_bench_press', name: 'Barbell Bench Press', defaultSets: 4, targetReps: '8-10', targetRpe: 8.5 },
+            { exerciseId: 'cable_wide_grip_lat_pulldown', name: 'Wide-Grip Lat Pulldown', defaultSets: 4, targetReps: '8-10', targetRpe: 8.5 },
+            { exerciseId: 'dumbbell_incline_bench_press', name: 'Incline Dumbbell Bench Press', defaultSets: 4, targetReps: '8-10', targetRpe: 8.5 },
+            { exerciseId: 'barbell_bent_over_row', name: 'Barbell Bent-Over Row', defaultSets: 4, targetReps: '8-10', targetRpe: 8.5 },
+            { exerciseId: 'cable_standing_fly', name: 'Standing Cable Chest Fly', defaultSets: 3, targetReps: '12-15', targetRpe: 9 }
+          ]
+        },
+        {
+          dayName: 'Day 2: Shoulders & Arms',
+          focus: 'Shoulders, Biceps, Triceps',
+          exercises: [
+            { exerciseId: 'barbell_standing_military_press', name: 'Standing Overhead Military Press', defaultSets: 4, targetReps: '8-10', targetRpe: 8.5 },
+            { exerciseId: 'dumbbell_lateral_raise', name: 'Dumbbell Lateral Raise', defaultSets: 4, targetReps: '12-15', targetRpe: 9 },
+            { exerciseId: 'barbell_curl', name: 'Barbell Biceps Curl', defaultSets: 4, targetReps: '8-10', targetRpe: 8.5 },
+            { exerciseId: 'ez_barbell_lying_triceps_extension_skull_crusher', name: 'EZ-Bar Skull Crusher', defaultSets: 4, targetReps: '8-10', targetRpe: 8.5 },
+            { exerciseId: 'cable_hammer_curl_with_rope', name: 'Cable Rope Hammer Curl', defaultSets: 3, targetReps: '12-15', targetRpe: 9 }
+          ]
+        },
+        {
+          dayName: 'Day 3: Legs & Lower Body',
+          focus: 'Quads, Hamstrings, Glutes, Calves',
+          exercises: [
+            { exerciseId: 'barbell_full_squat', name: 'Barbell Full Squat', defaultSets: 4, targetReps: '6-8', targetRpe: 8.5 },
+            { exerciseId: 'barbell_romanian_deadlift', name: 'Barbell Romanian Deadlift', defaultSets: 4, targetReps: '8-10', targetRpe: 8.5 },
+            { exerciseId: 'lever_leg_extension', name: 'Seated Leg Extension', defaultSets: 3, targetReps: '12-15', targetRpe: 9 },
+            { exerciseId: 'lever_seated_leg_curl', name: 'Seated Leg Curl', defaultSets: 3, targetReps: '10-12', targetRpe: 9 },
+            { exerciseId: 'barbell_standing_calf_raise', name: 'Standing Calf Raise', defaultSets: 4, targetReps: '12-15', targetRpe: 9 }
+          ]
+        }
+      ];
+    } else {
+      routines = [
+        {
+          dayName: 'Day 1: Full Body A (Squat & Press Focus)',
+          focus: 'Quads, Chest, Back, Shoulders',
+          exercises: [
+            { exerciseId: 'barbell_full_squat', name: 'Barbell Full Squat', defaultSets: 4, targetReps: '6-8', targetRpe: 8.5 },
+            { exerciseId: 'barbell_bench_press', name: 'Barbell Bench Press', defaultSets: 4, targetReps: '6-8', targetRpe: 8.5 },
+            { exerciseId: 'barbell_bent_over_row', name: 'Barbell Bent-Over Row', defaultSets: 4, targetReps: '8-10', targetRpe: 8.5 },
+            { exerciseId: 'dumbbell_lateral_raise', name: 'Dumbbell Lateral Raise', defaultSets: 3, targetReps: '12-15', targetRpe: 9 },
+            { exerciseId: 'cable_pushdown_with_rope_attachment', name: 'Cable Rope Triceps Pushdown', defaultSets: 3, targetReps: '10-12', targetRpe: 9 }
+          ]
+        },
+        {
+          dayName: 'Day 2: Full Body B (Deadlift & Pull Focus)',
+          focus: 'Hamstrings, Back, Shoulders, Arms',
+          exercises: [
+            { exerciseId: 'barbell_deadlift', name: 'Conventional Barbell Deadlift', defaultSets: 3, targetReps: '5', targetRpe: 9 },
+            { exerciseId: 'barbell_standing_military_press', name: 'Standing Overhead Military Press', defaultSets: 4, targetReps: '8-10', targetRpe: 8.5 },
+            { exerciseId: 'cable_wide_grip_lat_pulldown', name: 'Wide-Grip Lat Pulldown', defaultSets: 4, targetReps: '8-10', targetRpe: 8.5 },
+            { exerciseId: 'dumbbell_incline_bench_press', name: 'Incline Dumbbell Bench Press', defaultSets: 3, targetReps: '8-10', targetRpe: 8.5 },
+            { exerciseId: 'barbell_curl', name: 'Barbell Biceps Curl', defaultSets: 3, targetReps: '10-12', targetRpe: 9 }
+          ]
+        },
+        {
+          dayName: 'Day 3: Full Body C (Hypertrophy & Overload)',
+          focus: 'Glutes, Quads, Chest, Back, Core',
+          exercises: [
+            { exerciseId: 'barbell_romanian_deadlift', name: 'Barbell Romanian Deadlift', defaultSets: 4, targetReps: '8-10', targetRpe: 8.5 },
+            { exerciseId: 'sled_hack_squat', name: 'Machine Hack Squat', defaultSets: 3, targetReps: '10-12', targetRpe: 8.5 },
+            { exerciseId: 'cable_seated_row', name: 'Seated Cable Row', defaultSets: 3, targetReps: '10-12', targetRpe: 8.5 },
+            { exerciseId: 'cable_standing_fly', name: 'Standing Cable Chest Fly', defaultSets: 3, targetReps: '12-15', targetRpe: 9 },
+            { exerciseId: 'hanging_leg_raise', name: 'Hanging Leg Raise', defaultSets: 3, targetReps: '12-15', targetRpe: 9 }
+          ]
+        }
+      ];
+    }
+
+    return {
+      id: `copied_athlete_plan_${athlete.id}_${Date.now()}`,
+      title: customTitle.trim() || getDefaultAthleteWorkoutName(athlete),
+      subtitle: `Copied from ${athlete.name} (${athlete.workoutSplit || 'Strength & Hypertrophy'})`,
+      level: athlete.level || 'Intermediate',
+      daysPerWeek: athlete.trainingDaysPerWeek || routines.length,
+      goal: 'Strength & Size (Powerbuilding)',
+      description: athlete.bio || `${athlete.name}'s ${athlete.workoutSplit || 'training split'} featuring ${athlete.favoriteLifts || 'compound progressive overload'}.`,
+      badge: 'BUDDY WORKOUT',
+      isPersonalized: true,
+      routines
+    };
+  };
+
+  const handleOpenCopyWorkout = (athlete: NearbyAthlete, openFullPreview = false) => {
+    const existingSavedName = copiedWorkoutByAthleteId[athlete.id];
+    setCopyingAthleteId(athlete.id);
+    setCustomWorkoutTitleInput(existingSavedName || getDefaultAthleteWorkoutName(athlete));
+    if (openFullPreview) {
+      setPreviewWorkoutAthleteId(athlete.id);
+    }
+  };
+
+  const handleCancelCopyWorkout = () => {
+    setCopyingAthleteId(null);
+    setPreviewWorkoutAthleteId(null);
+  };
+
+  const handleSaveAthleteWorkout = (athlete: NearbyAthlete) => {
+    const finalName = customWorkoutTitleInput.trim() || getDefaultAthleteWorkoutName(athlete);
+    const planToSave = buildAthleteWorkoutPlan(athlete, finalName);
+    saveSharedPlanToMyCustomPlans(planToSave, true);
+    setCopiedWorkoutByAthleteId(prev => ({ ...prev, [athlete.id]: finalName }));
+    setCopyingAthleteId(null);
+    setPreviewWorkoutAthleteId(null);
+    showToast(`✅ Copied "${finalName}" straight to My Workouts!`);
   };
 
   const handleLocationDetected = (res: DetectedLocationResult) => {
@@ -1151,6 +1376,211 @@ export const NearbyAthletesView: React.FC<NearbyAthletesViewProps> = ({
                               <span>Full Athlete Profile</span>
                               <ArrowRight className="w-3 h-3" />
                             </button>
+                          </div>
+
+                          {/* Copy Workout to My Workouts Section (with Rename & View Full Workout Options) */}
+                          <div className="p-3.5 sm:px-4 sm:py-3 bg-zinc-950/90 space-y-2.5">
+                            {copyingAthleteId === athlete.id ? (
+                              <div className="space-y-3">
+                                <div className="flex items-center justify-between gap-2">
+                                  <label className="text-xs sm:text-[13px] font-bold text-amber-400 flex items-center gap-1.5">
+                                    <Edit3 className="w-3.5 h-3.5 shrink-0" />
+                                    <span>Rename Workout Before Saving</span>
+                                  </label>
+                                  <div className="flex items-center gap-2">
+                                    {customWorkoutTitleInput && (
+                                      <button
+                                        type="button"
+                                        onClick={() => setCustomWorkoutTitleInput('')}
+                                        className="px-2 py-0.5 rounded-md bg-zinc-900 hover:bg-zinc-800 border border-zinc-800 text-[11px] font-medium text-zinc-300 hover:text-white cursor-pointer"
+                                      >
+                                        Clear Text
+                                      </button>
+                                    )}
+                                  </div>
+                                </div>
+
+                                <div className="space-y-2">
+                                  <input
+                                    ref={renameInputRef}
+                                    type="text"
+                                    value={customWorkoutTitleInput}
+                                    onChange={e => setCustomWorkoutTitleInput(e.target.value)}
+                                    onKeyDown={e => {
+                                      if (e.key === 'Enter') {
+                                        e.preventDefault();
+                                        handleSaveAthleteWorkout(athlete);
+                                      } else if (e.key === 'Escape') {
+                                        handleCancelCopyWorkout();
+                                      }
+                                    }}
+                                    placeholder={getDefaultAthleteWorkoutName(athlete)}
+                                    className="w-full min-w-0 px-3.5 py-3 sm:py-2.5 min-h-[46px] rounded-xl bg-zinc-900 border-2 border-amber-400/80 focus:border-amber-400 focus:ring-2 focus:ring-amber-400/25 text-sm font-semibold text-zinc-100 placeholder:text-zinc-500 focus:outline-none shadow-inner"
+                                  />
+
+                                  {/* Action Buttons: View Full Workout, Save to My Workouts, Cancel */}
+                                  <div className="flex flex-wrap items-center gap-2">
+                                    <button
+                                      type="button"
+                                      onClick={() =>
+                                        setPreviewWorkoutAthleteId(prev =>
+                                          prev === athlete.id ? null : athlete.id
+                                        )
+                                      }
+                                      className="flex-1 sm:flex-initial min-h-[42px] px-3.5 py-2 rounded-xl bg-zinc-900 hover:bg-zinc-800 text-amber-300 border border-amber-400/40 font-bold text-xs flex items-center justify-center gap-1.5 cursor-pointer transition-colors"
+                                    >
+                                      {previewWorkoutAthleteId === athlete.id ? (
+                                        <>
+                                          <EyeOff className="w-3.5 h-3.5 shrink-0" />
+                                          <span>Hide Full Workout</span>
+                                        </>
+                                      ) : (
+                                        <>
+                                          <Eye className="w-3.5 h-3.5 shrink-0" />
+                                          <span>View Full Workout</span>
+                                        </>
+                                      )}
+                                    </button>
+
+                                    <button
+                                      type="button"
+                                      onClick={() => handleSaveAthleteWorkout(athlete)}
+                                      className="flex-1 sm:flex-initial min-h-[42px] px-4 py-2 rounded-xl bg-amber-400 hover:bg-amber-300 text-zinc-950 font-bold text-xs uppercase tracking-wide flex items-center justify-center gap-1.5 cursor-pointer shrink-0 transition-colors shadow-sm"
+                                    >
+                                      <Check className="w-4 h-4 stroke-[2.5]" />
+                                      <span>Save to My Workouts</span>
+                                    </button>
+
+                                    <button
+                                      type="button"
+                                      onClick={handleCancelCopyWorkout}
+                                      className="min-h-[42px] px-3.5 py-2 rounded-xl bg-zinc-900 hover:bg-zinc-800 text-zinc-300 hover:text-white border border-zinc-700 font-semibold text-xs flex items-center justify-center gap-1 cursor-pointer transition-colors"
+                                    >
+                                      <X className="w-3.5 h-3.5" />
+                                      <span>Cancel</span>
+                                    </button>
+                                  </div>
+                                </div>
+
+                                {/* Full Workout Preview Breakdown Before Saving */}
+                                {previewWorkoutAthleteId === athlete.id && (() => {
+                                  const previewPlan = buildAthleteWorkoutPlan(
+                                    athlete,
+                                    customWorkoutTitleInput || getDefaultAthleteWorkoutName(athlete)
+                                  );
+                                  return (
+                                    <div className="p-3 rounded-xl bg-zinc-900/90 border border-amber-400/30 space-y-2.5">
+                                      <div className="flex items-center justify-between gap-2 border-b border-zinc-800 pb-2">
+                                        <div>
+                                          <span className="text-xs font-bold text-zinc-100 block">
+                                            {previewPlan.title}
+                                          </span>
+                                          <span className="text-[10px] font-mono text-amber-400">
+                                            {previewPlan.routines.length} Workout Sessions · {previewPlan.daysPerWeek}d / week
+                                          </span>
+                                        </div>
+                                        <button
+                                          type="button"
+                                          onClick={() => setPreviewWorkoutAthleteId(null)}
+                                          className="text-[11px] text-zinc-400 hover:text-zinc-200 font-medium cursor-pointer"
+                                        >
+                                          Collapse Preview
+                                        </button>
+                                      </div>
+
+                                      <div className="space-y-2 max-h-64 overflow-y-auto pr-1">
+                                        {previewPlan.routines.map((rt, rIdx) => (
+                                          <div
+                                            key={rIdx}
+                                            className="p-2.5 rounded-lg bg-zinc-950/90 border border-zinc-800/80 space-y-1.5"
+                                          >
+                                            <div className="flex items-center justify-between gap-2">
+                                              <span className="text-xs font-bold text-amber-400">
+                                                {rt.dayName}
+                                              </span>
+                                              <span className="text-[10px] font-mono text-zinc-400">
+                                                {rt.exercises.length} exercises
+                                              </span>
+                                            </div>
+                                            <div className="divide-y divide-zinc-900">
+                                              {rt.exercises.map((ex, exIdx) => (
+                                                <div
+                                                  key={exIdx}
+                                                  className="py-1 flex items-center justify-between gap-2 text-[11px]"
+                                                >
+                                                  <span className="text-zinc-200 font-medium truncate">
+                                                    {exIdx + 1}. {ex.name || ex.exerciseId.replace(/_/g, ' ')}
+                                                  </span>
+                                                  <span className="font-mono text-zinc-400 shrink-0">
+                                                    {ex.defaultSets} × {ex.targetReps} · RPE {ex.targetRpe}
+                                                  </span>
+                                                </div>
+                                              ))}
+                                            </div>
+                                          </div>
+                                        ))}
+                                      </div>
+                                    </div>
+                                  );
+                                })()}
+                              </div>
+                            ) : (
+                              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5">
+                                <div className="flex items-center gap-2.5 min-w-0">
+                                  <span className="w-7 h-7 rounded-lg bg-amber-400/15 border border-amber-400/35 text-amber-400 flex items-center justify-center shrink-0">
+                                    <Copy className="w-3.5 h-3.5" />
+                                  </span>
+                                  <div className="min-w-0 flex-1">
+                                    <span className="text-xs sm:text-sm font-bold text-zinc-100 block truncate">
+                                      {copiedWorkoutByAthleteId[athlete.id] || getDefaultAthleteWorkoutName(athlete)}
+                                    </span>
+                                    <span className="text-[11px] text-zinc-400 block truncate">
+                                      {copiedWorkoutByAthleteId[athlete.id]
+                                        ? 'Saved in My Workouts · Tap Rename to edit workout name'
+                                        : `${athlete.trainingDaysPerWeek || 4}d/wk split · View, rename & copy straight to My Workouts`}
+                                    </span>
+                                  </div>
+                                </div>
+
+                                <div className="flex flex-wrap items-center gap-2 w-full sm:w-auto shrink-0">
+                                  {copiedWorkoutByAthleteId[athlete.id] && (
+                                    <span className="px-2.5 py-2 rounded-xl bg-emerald-500/15 text-emerald-300 border border-emerald-500/30 font-mono font-bold text-[11px] flex items-center justify-center gap-1 shrink-0">
+                                      <Check className="w-3.5 h-3.5 stroke-[2.5]" />
+                                      <span>Copied</span>
+                                    </span>
+                                  )}
+                                  <button
+                                    type="button"
+                                    onClick={() => handleOpenCopyWorkout(athlete, true)}
+                                    className="flex-1 sm:flex-initial min-h-[40px] px-3 py-2 rounded-xl bg-zinc-900 hover:bg-zinc-800 text-zinc-200 border border-zinc-700 font-semibold text-xs flex items-center justify-center gap-1.5 cursor-pointer transition-colors"
+                                    title="View full workout before saving"
+                                  >
+                                    <Eye className="w-3.5 h-3.5 text-amber-400" />
+                                    <span>View Full Workout</span>
+                                  </button>
+                                  <button
+                                    type="button"
+                                    onClick={() => handleOpenCopyWorkout(athlete, false)}
+                                    className="flex-1 sm:flex-initial min-h-[40px] px-3 py-2 rounded-xl bg-zinc-900 hover:bg-zinc-800 text-amber-400 border border-amber-400/40 font-bold text-xs flex items-center justify-center gap-1.5 cursor-pointer transition-colors"
+                                    title="Rename workout before saving"
+                                  >
+                                    <Edit3 className="w-3.5 h-3.5" />
+                                    <span>Rename</span>
+                                  </button>
+                                  <button
+                                    type="button"
+                                    onClick={() => handleOpenCopyWorkout(athlete, false)}
+                                    className="flex-1 sm:flex-initial min-h-[40px] px-3.5 py-2 rounded-xl bg-amber-400 hover:bg-amber-300 text-zinc-950 font-bold text-xs flex items-center justify-center gap-1.5 cursor-pointer transition-colors shadow-xs"
+                                    title="Copy this workout to My Workouts"
+                                  >
+                                    <Copy className="w-3.5 h-3.5 stroke-[2.5]" />
+                                    <span>
+                                      {copiedWorkoutByAthleteId[athlete.id] ? 'Copy Again' : 'Copy to My Workouts'}
+                                    </span>
+                                  </button>
+                                </div>
+                              </div>
+                            )}
                           </div>
                         </div>
 
